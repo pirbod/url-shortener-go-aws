@@ -1,12 +1,12 @@
-# Stage 1: Build the binary
-FROM golang:1.21 as builder
+# Build stage
+FROM golang:1.21 AS builder
 WORKDIR /app
-COPY ./app/go.mod ./
+COPY app/go.mod app/go.sum ./
 RUN go mod download
-COPY ./app/*.go ./
+COPY app/*.go ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o url-shortener
 
-# Stage 2: Final image
+# Final image
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
