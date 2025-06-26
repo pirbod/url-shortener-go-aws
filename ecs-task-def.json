@@ -1,0 +1,31 @@
+{
+  "family": "url-shortener-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::123456789012:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/urlShortenerTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "url-shortener",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/url-shortener:latest",
+      "portMappings": [
+        { "containerPort": 8080, "hostPort": 8080 }
+      ],
+      "environment": [
+        { "name": "API_KEY", "value": "your-api-key" },
+        { "name": "BASE_URL", "value": "http://example.com" },
+        { "name": "DYNAMODB_TABLE", "value": "url-shortener-dev" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/url-shortener",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
