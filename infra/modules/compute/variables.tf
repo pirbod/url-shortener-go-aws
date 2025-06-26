@@ -1,0 +1,10 @@
+variable "env" { type = string }
+variable "aws_region" { type = string }
+variable "image_url" { type = string }
+variable "api_key" { type = string }
+variable "base_url" { type = string }
+variable "table_name" { type = string }
+variable "execution_role_arn" { type = string }
+variable "task_role_arn" { type = string }
+variable "vpc_id" { type = string }
+variable "public_subnets" { type = list(string) }
