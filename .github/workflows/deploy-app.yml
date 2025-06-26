@@ -1,0 +1,50 @@
+name: Deploy Application
+
+on:
+  push:
+    paths:
+      - 'app/**'
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      ECR_REPO: 123456789012.dkr.ecr.us-east-1.amazonaws.com/url-shortener
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: app-deploy
+
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+            | docker login --username AWS --password-stdin $ECR_REPO
+
+      - name: Build, Tag & Push Docker Image
+        run: |
+          docker build -t url-shortener ./app
+          docker tag url-shortener:latest $ECR_REPO:latest
+          docker push $ECR_REPO:latest
+
+      - name: Render ECS Task Definition
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ecs-task-def.json
+          container-name: url-shortener
+          image: $ECR_REPO:latest
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-definition.outputs.task-definition }}
+          service: dev-service
+          cluster: dev-cluster
+          wait-for-service-stability: true
